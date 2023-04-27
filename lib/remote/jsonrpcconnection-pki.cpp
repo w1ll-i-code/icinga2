@@ -153,10 +153,15 @@ Value RequestCertificateHandler(const MessageOrigin::Ptr& origin, const Dictiona
 	/* Check whether we are a signing instance or we
 	 * must delay the signing request.
 	 */
-	if (!Utility::PathExists(GetIcingaCADir() + "/ca.key"))
-		goto delayed_request;
-
-	if (!signedByCA) {
+	if (!Utility::PathExists(GetIcingaCADir() + "/ca.key")) {
+                Log(LogDebug, "JsonRpcConnection")
+                    << "No ca key present at " << GetIcingaCADir() << "/ca.key";
+                Log(LogInformation, "JsonRpcConnection")
+                    << "This node is not a signing instance. Delaying request for CN '"
+                    << cn << "'";
+                goto delayed_request;
+        }
+        if (!signedByCA) {
 		String salt = listener->GetTicketSalt();
 
 		ticket = params->Get("ticket");
